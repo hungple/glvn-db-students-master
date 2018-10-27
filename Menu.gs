@@ -13,10 +13,14 @@
 function onOpen() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet();
   var entries = [
-    // DO NOT DELETE THIS FUNCTION
+    // DO NOT DELETE THESE TWO FUNCTIONS
     { 
       name : "Create classes (root only)",
       functionName : "createClasses"
+    },    
+    { 
+      name : "Update classes (root only)",
+      functionName : "updateClasses"
     },    
     //{
     //name : "00 - Fill in service dates (August/early September)",
@@ -101,7 +105,142 @@ function createClassesImpl() {
   createClassesImpl2("vn-classes", vnClassTemplateId, 3);
 }
 
+
 function createClassesImpl2(sheetName, templateId, tokenNumber) {
+  
+  var clsNameCol          = 2;
+  var gmailCol            = 6;
+  var actionCol           = 7;
+  var clsFolderIdCol      = 1;
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  var range = sheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
+
+  var clsName, action, clsFolder;
+  
+  // iterate through all cells in the range
+  for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
+    clsName = range.getCell(cellRow, clsNameCol).getValue();
+    if( clsName == "")
+      break;
+
+    //gmail = range.getCell(cellRow, gmailCol).getValue().trim();
+    action = range.getCell(cellRow, actionCol).getValue();
+    clsFolder = DriveApp.getFolderById(range.getCell(cellRow, clsFolderIdCol).getValue());
+    
+    if(action == 'x') {
+      Logger.log(clsName);
+
+      // Make a copy and save it into the class folder
+      //var file = DriveApp.getFileById(templateId);
+      //var newFile = file.makeCopy(clsName, clsFolder);
+
+      var template = DriveApp.getFileById(templateId);
+      var classSht = getReportFolderId(clsName, clsFolder);
+
+      /////////////////////////////////////////////////////////////////////////////
+      // Open the new spreadsheet and setup basic functions
+      /////////////////////////////////////////////////////////////////////////////
+      var ss2 = SpreadsheetApp.openById(newFile.getId());
+      ss2.getSheets()[0].getRange("A1:A1").getCell(1, 1).setValue(clsName);
+      var temp = "=IMPORTRANGE(\"" + ss.getId() + "\",A1&\"!B1:I50\")";
+      ss2.getSheets()[0].getRange("A2:A2").getCell(1, 1).setValue(temp);
+      temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"" + sheetName + "\"&\"!E\"&(2*mid(A1,3,1)+if(right(A1,1)=\"A\",0,1)))";
+      ss2.getSheets()[0].getRange("B1:B1").getCell(1, 1).setValue(temp);
+      
+      temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"calendar!B1:S1\")";
+      ss2.getSheets()[1].getRange("F2:F2").getCell(1, 1).setValue(temp);      
+      
+      temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"calendar!B2:S2\")";
+      ss2.getSheets()[2].getRange("F2:F2").getCell(1, 1).setValue(temp);      
+      
+      ss2.getSheets()[3].getRange("H3:H3").getCell(1, 1).setValue((cellRow/10+tokenNumber));
+      Logger.log("Basic updated.");
+      
+      // Save report card folder id for each each class
+      var reportFolderId = getReportFolderId(clsName, clsFolder);
+      ss2.getSheets()[5].getRange("B3:B3").getCell(1, 1).setValue(reportFolderId);
+      Logger.log("Update report card folder id: " + reportFolderId);
+     
+      /////////////////////////////////////////////////////////////////////////////
+      // Save new class spreadsheet id into the class (ex: GL1A) sheet in the masters book
+      /////////////////////////////////////////////////////////////////////////////
+      var clsSheet = ss.getSheetByName(clsName);
+      var clsRange = clsSheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
+      var tstr = "=IMPORTRANGE(\"" + newFile.getId() + "\",\"Grades!F3:F50\")";
+      clsRange.getCell(1, 14).setValue(tstr);
+      Logger.log("Spreadsheet id is saved in " + clsName + " sheet of the master book.");
+      
+      /////////////////////////////////////////////////////////////////////////////
+      // Save new class spreadsheet id into the gl/vn-honor-roll sheet in the masters book
+      /////////////////////////////////////////////////////////////////////////////
+      var maxHonorRollEachClass = parseInt(getStr("MAX_HONOR_ROLL_EACH_CLASS"));
+      // Only pull this maxHonorRollEachClass rows
+      var imptStr = "=IMPORTRANGE(\"" + newFile.getId() + "\",\"honor-roll!B3:F" + (3+maxHonorRollEachClass-1) + "\")";
+      //Logger.log(sheetName + " - " + imptStr);
+      var hrSheet = ss.getSheetByName(sheetName.substring(0, 3)+"honor-roll");
+      var hrRange = hrSheet.getRange(2, 1, 170, 15); //row, col, numRows, numCols
+      var hrCell  = hrRange.getCell(1+((cellRow-1)*5), 2);
+      hrCell.setValue(imptStr);
+      Logger.log("Spreadsheet id is saved in the honor roll sheet.");
+    }
+  }
+}
+
+
+function getClassSpreadsheetId(clsName, clsFolder) {
+  var files = clsFolder.getFilesByName(clsName);
+  if (files.hasNext()) {
+    var file = files.next();
+    return file.getId();
+  }
+  return "";
+}
+
+function getReportFolderId(clsName, clsFolder) {
+  var folders = clsFolder.getFoldersByName(clsName + "-report-cards");
+  if (folders.hasNext()) {
+    var folder = folders.next();
+    return folder.getId();
+  }
+  return "";
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// DO NOT DELETE THIS FUNCTION
+// Create classes
+// This function is for setting up database for the first time only
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+function updateClasses() {
+  var ui = SpreadsheetApp.getUi(); // Same variations.
+  
+  var response = ui.alert(
+      'Warning!!!',
+      'Do you want to update classes?',
+      ui.ButtonSet.YES_NO);
+
+  // Process the user's response.
+  if (response == ui.Button.YES) {
+    updateClassesImpl();
+  }
+}
+
+
+function updateClassesImpl() {
+  var glClassTemplateId = getStr("GL_CLASS_TEMPLATE_ID");
+  var vnClassTemplateId = getStr("VN_CLASS_TEMPLATE_ID");
+
+  updateClassesImpl2("gl-classes", glClassTemplateId, 1);
+  updateClassesImpl2("vn-classes", vnClassTemplateId, 3);
+}
+
+
+function updateClassesImpl2(sheetName, templateId, tokenNumber) {
   
   var clsNameCol          = 2;
   var gmailCol            = 6;
@@ -142,6 +281,10 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
       // source sheet
       var ss = tss.getSheetByName(sn);
   
+      // set the token for testing
+      ss.getRange("H3:H3").getCell(1, 1).setValue((cellRow/10+tokenNumber));
+      Logger.log((cellRow/10+tokenNumber));
+
       // Get full range of data
       var SRange = ss.getDataRange();
 
@@ -159,28 +302,11 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
 
       // set the target range to the values of the source data
       ts.getRange(A1Range).setValues(SData);
+      
     }
   }
 }
 
-
-function getClassSpreadsheetId(clsName, clsFolder) {
-  var files = clsFolder.getFilesByName(clsName);
-  if (files.hasNext()) {
-    var file = files.next();
-    return file.getId();
-  }
-  return "";
-}
-
-function getReportFolderId(clsName, clsFolder) {
-  var folders = clsFolder.getFoldersByName(clsName + "-report-cards");
-  if (folders.hasNext()) {
-    var folder = folders.next();
-    return folder.getId();
-  }
-  return "";
-}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
