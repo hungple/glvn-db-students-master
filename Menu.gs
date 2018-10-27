@@ -212,8 +212,8 @@ function getReportFolderId(clsName, clsFolder) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // DO NOT DELETE THIS FUNCTION
-// Create classes
-// This function is for setting up database for the first time only
+// Update classes
+// This function can be used for updating classes if teachers have not updated their classes
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 function updateClasses() {
