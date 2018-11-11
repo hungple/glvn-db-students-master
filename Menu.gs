@@ -133,36 +133,32 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
       Logger.log(clsName);
 
       // Make a copy and save it into the class folder
-      //var file = DriveApp.getFileById(templateId);
-      //var newFile = file.makeCopy(clsName, clsFolder);
-
-      var template = DriveApp.getFileById(templateId);
-      var classSht = getReportFolderId(clsName, clsFolder);
+      var file = DriveApp.getFileById(templateId);
+      var newFile = file.makeCopy(clsName, clsFolder);
 
       /////////////////////////////////////////////////////////////////////////////
       // Open the new spreadsheet and setup basic functions
       /////////////////////////////////////////////////////////////////////////////
-      var ss2 = SpreadsheetApp.openById(newFile.getId());
-      //ss2.getSheets()[0].getRange("A1:A1").getCell(1, 1).setValue(clsName);
-      var ss = ss2.getSheetByName("contacts");
-      ss.getRange("A1:A1").getCell(1, 1).setValue(clsName);
+      var newss = SpreadsheetApp.openById(newFile.getId());
+      newss.getSheetByName("contacts").getRange("A1:A1").getCell(1, 1).setValue(clsName);
+
       var temp = "=IMPORTRANGE(\"" + ss.getId() + "\",A1&\"!B1:I50\")";
-      ss.getRange("A2:A2").getCell(1, 1).setValue(temp);
+      newss.getSheetByName("contacts").getRange("A2:A2").getCell(1, 1).setValue(temp);
       temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"" + sheetName + "\"&\"!E\"&(2*mid(A1,3,1)+if(right(A1,1)=\"A\",0,1)))";
-      ss.getRange("B1:B1").getCell(1, 1).setValue(temp);
+      newss.getSheetByName("contacts").getRange("B1:B1").getCell(1, 1).setValue(temp);
       
       temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"calendar!B1:S1\")";
-      ss2.getSheetByName("attendants-HK1").getRange("F2:F2").getCell(1, 1).setValue(temp);      
+      newss.getSheetByName("attendants-HK1").getRange("F2:F2").getCell(1, 1).setValue(temp);      
       
       temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"calendar!B2:S2\")";
-      ss2.getSheetByName("attendants-HK2").getRange("F2:F2").getCell(1, 1).setValue(temp);      
+      newss.getSheetByName("attendants-HK2").getRange("F2:F2").getCell(1, 1).setValue(temp);      
       
-      ss2.getSheetByName("grades").getRange("H3:H3").getCell(1, 1).setValue((cellRow/10+tokenNumber));
+      newss.getSheetByName("grades").getRange("H3:H3").getCell(1, 1).setValue((cellRow/10+tokenNumber));
       Logger.log("Basic updated.");
       
       // Save report card folder id for each each class
       var reportFolderId = getReportFolderId(clsName, clsFolder);
-      ss2.getSheetByName("honor-roll").getRange("B3:B3").getCell(1, 1).setValue(reportFolderId);
+      newss.getSheetByName("admin").getRange("B3:B3").getCell(1, 1).setValue(reportFolderId);
       Logger.log("Update report card folder id: " + reportFolderId);
      
       /////////////////////////////////////////////////////////////////////////////
