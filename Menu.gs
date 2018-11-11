@@ -164,10 +164,8 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
       /////////////////////////////////////////////////////////////////////////////
       // Save new class spreadsheet id into the class (ex: GL1A) sheet in the masters book
       /////////////////////////////////////////////////////////////////////////////
-      var clsSheet = ss.getSheetByName(clsName);
-      var clsRange = clsSheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
       var tstr = "=IMPORTRANGE(\"" + newFile.getId() + "\",\"Grades!F3:F50\")";
-      clsRange.getCell(1, 14).setValue(tstr);
+      ss.getSheetByName(clsName).getRange("N2:N2").getCell(1, 1).setValue(tstr);
       Logger.log("Spreadsheet id is saved in " + clsName + " sheet of the master book.");
       
       /////////////////////////////////////////////////////////////////////////////
@@ -176,8 +174,7 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
       var maxHonorRollEachClass = parseInt(getStr("MAX_HONOR_ROLL_EACH_CLASS"));
       // Only pull this maxHonorRollEachClass rows
       var imptStr = "=IMPORTRANGE(\"" + newFile.getId() + "\",\"honor-roll!B3:F" + (3+maxHonorRollEachClass-1) + "\")";
-      //Logger.log(sheetName + " - " + imptStr);
-      var hrSheet = ss.getSheetByName(sheetName.substring(0, 3)+"honor-roll");
+      var hrSheet = ss.getSheetByName(sheetName.substring(0, 3)+"honor-roll"); // gl-honor-roll or vn-honor-roll
       var hrRange = hrSheet.getRange(2, 1, 170, 15); //row, col, numRows, numCols
       var hrCell  = hrRange.getCell(1+((cellRow-1)*5), 2);
       hrCell.setValue(imptStr);
