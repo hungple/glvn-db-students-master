@@ -148,10 +148,10 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
       newss.getSheetByName("contacts").getRange("B1:B1").getCell(1, 1).setValue(temp);
       
       temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"calendar!B1:S1\")";
-      newss.getSheetByName("attendants-HK1").getRange("F2:F2").getCell(1, 1).setValue(temp);      
+      newss.getSheetByName("attendance-HK1").getRange("F2:F2").getCell(1, 1).setValue(temp);      
       
       temp = "=IMPORTRANGE(\"" + ss.getId() + "\",\"calendar!B2:S2\")";
-      newss.getSheetByName("attendants-HK2").getRange("F2:F2").getCell(1, 1).setValue(temp);      
+      newss.getSheetByName("attendance-HK2").getRange("F2:F2").getCell(1, 1).setValue(temp);      
       
       newss.getSheetByName("grades").getRange("H3:H3").getCell(1, 1).setValue((cellRow/10+tokenNumber));
       Logger.log("Basic updated.");
@@ -443,7 +443,7 @@ function shareClassesImpl2(sheetName, reportFormId, isShared) {
   }
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  var range = sheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
+  var range = sheet.getRange(2, 1, 19, 15); //row, col, numRows, numCols
 
   var clsName, gmails, clsFolder, action;
   
@@ -451,8 +451,8 @@ function shareClassesImpl2(sheetName, reportFormId, isShared) {
   for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
     clsName = range.getCell(cellRow, clsNameCol).getValue();
     gmails = range.getCell(cellRow, gmailCol).getValue().trim();
-    if( gmails == "")
-      break;
+    //if( gmails == "")
+    //  break;
     
     action = range.getCell(cellRow, actionCol).getValue();
     clsFolder = DriveApp.getFolderById(range.getCell(cellRow, clsFolderIdCol).getValue());
