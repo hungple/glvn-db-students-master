@@ -265,44 +265,76 @@ function updateClassesImpl2(sheetName, templateId, tokenNumber) {
       var tss = SpreadsheetApp.openById(templateId);
       
       // Open class spreadsheet
-      var cssId = getClassSpreadsheetId(clsName, clsFolder);
-      var css = SpreadsheetApp.openById(cssId);
+      var css = SpreadsheetApp.openById(getClassSpreadsheetId(clsName, clsFolder));
 
-      /////////////////////////////////////////////////////////////////////////////
       // Update `grades` sheet
-      /////////////////////////////////////////////////////////////////////////////
-      var sn = 'grades';
-      
-      // source sheet
-      var ss = tss.getSheetByName(sn);
-  
-      // set the token for testing
-      ss.getRange("H3:H3").getCell(1, 1).setValue((cellRow/10+tokenNumber));
-      Logger.log((cellRow/10+tokenNumber));
+      //updateSheet_Grades(tss, css, cellRow, tokenNumber);
 
-      // Get full range of data
-      var SRange = ss.getDataRange();
-
-      // get A1 notation identifying the range
-      var A1Range = SRange.getA1Notation();
-
-      // get the data values in range
-      var SData = SRange.getValues();
-      
-      // target sheet
-      var ts = css.getSheetByName(sn); 
-
-      // Clear the Google Sheet before copy
-      ts.clear({contentsOnly: true});
-
-      // set the target range to the values of the source data
-      ts.getRange(A1Range).setValues(SData);
-      
+      // Update `attendance_HK1` sheet
+      updateSheet_Attendance(tss, css);
     }
   }
 }
 
 
+function updateSheet_Grades(tss, css, cellRow, tokenNumber) {
+
+  var sn = 'grades';
+      
+  // source sheet
+  var ss = tss.getSheetByName(sn);
+  
+  // set the token for verifying
+  ss.getRange("H3:H3").getCell(1, 1).setValue((cellRow/10+tokenNumber));
+  Logger.log((cellRow/10+tokenNumber));
+
+  // Get full range of data
+  var SRange = ss.getDataRange();
+
+  // get A1 notation identifying the range
+  var A1Range = SRange.getA1Notation();
+
+  // get the data values in range
+  var SData = SRange.getValues();
+      
+  // target sheet
+  var ts = css.getSheetByName(sn); 
+
+  // Clear the Google Sheet before copy
+  ts.clear({contentsOnly: true});
+
+  // set the target range to the values of the source data
+  ts.getRange(A1Range).setValues(SData);
+     
+}
+
+
+function updateSheet_Attendance(tss, css) {
+
+  var sn = 'attendance-HK1';
+      
+  // source sheet
+  var ss = tss.getSheetByName(sn);
+  
+  // Get full range of data
+  var SRange = ss.getDataRange();
+
+  // get A1 notation identifying the range
+  var A1Range = SRange.getA1Notation();
+
+  // get the data values in range
+  var SData = SRange.getValues();
+      
+  // target sheet
+  var ts = css.getSheetByName(sn); 
+
+  // Clear the Google Sheet before copy
+  ts.clear({contentsOnly: true});
+
+  // set the target range to the values of the source data
+  ts.getRange(A1Range).setValues(SData);
+     
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
