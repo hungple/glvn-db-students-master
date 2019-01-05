@@ -112,6 +112,11 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
   var gmailCol            = 6;
   var actionCol           = 7;
   var clsFolderIdCol      = 1;
+
+  var admins = getStr("ADMIN_IDS").split(",");
+  for (var i = 0; i < admins.length; i++) {
+    admins[i] = admins[i].trim();
+  }
   
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(sheetName);
@@ -131,8 +136,35 @@ function createClassesImpl2(sheetName, templateId, tokenNumber) {
     
     if(action == 'x') {
       Logger.log(clsName);
+      
+      // Unsharing GL1A and rename it to "bk"
+      
+      var files = clsFolder.getFilesByName(clsName); // open spreadsheet GL1A
+      while (files.hasNext()) {
+        var file = files.next();
+        var spreadSheet = SpreadsheetApp.openById(file.getId());
+        Logger.log("Spreadsheet: " + spreadSheet.getName());
+        try {
+          //remove editors
+          var editors = spreadSheet.getEditors();
+          for (var j = 0; j < editors.length; j++) {
+            if(isNotAdmin(admins, editors[j].getEmail())){
+              spreadSheet.removeEditor(editors[j].getEmail());
+              Logger.log("Editor removed: " + editors[j].getEmail());              
+            }
+          }             
+        }
+        catch(e) {
+          Logger.log(e); //ignore error
+        }
+        
+        // rename to "bk"
+        file.setName("bk");
+      }
 
+      /////////////////////////////////////////////////////////////////////////////
       // Make a copy and save it into the class folder
+      /////////////////////////////////////////////////////////////////////////////
       var file = DriveApp.getFileById(templateId);
       var newFile = file.makeCopy(clsName, clsFolder);
 
@@ -271,7 +303,7 @@ function updateClassesImpl2(sheetName, templateId, tokenNumber) {
       //updateSheet_Grades(tss, css, cellRow, tokenNumber);
 
       // Update `attendance_HK1` sheet
-      updateSheet_Attendance(tss, css);
+      // updateSheet_Attendance(tss, css);
     }
   }
 }
@@ -451,11 +483,11 @@ function shareClasses() {
 }
 
 
-function shareClassesImpl(isToBeShared) {
+function shareClassesImpl(isShared) {
   var glReportCardTemplateId = getStr("GL_REPORT_CARD_TEMPLATE_ID");
   var vnReportCardTemplateId = getStr("VN_REPORT_CARD_TEMPLATE_ID");
-  shareClassesImpl2("gl-classes", glReportCardTemplateId, isToBeShared);
-  shareClassesImpl2("vn-classes", vnReportCardTemplateId, isToBeShared);
+  shareClassesImpl2("gl-classes", glReportCardTemplateId, isShared);
+  shareClassesImpl2("vn-classes", vnReportCardTemplateId, isShared);
 }
 
 
@@ -575,7 +607,7 @@ function shareClassesImpl2(sheetName, reportFormId, isShared) {
           }
           catch(e) {Logger.log(e);} //ignore error
         }
-        else { // Share other docs
+        else if(file.getName().length > 4)  { // Share other docs only filename that is longer than 4 characters
           var doc = DocumentApp.openById(file.getId());
           Logger.log(doc.getName());
           try {
