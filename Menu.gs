@@ -15,6 +15,10 @@ function onOpen() {
   var entries = [
     // DO NOT DELETE THESE TWO FUNCTIONS
     { 
+      name : "Update cells (root only)",
+      functionName : "updateCells"
+    },    
+    { 
       name : "Create classes (root only)",
       functionName : "createClasses"
     },    
@@ -719,7 +723,7 @@ function updateFinalPointImpl() {
 
 function getFinalGrade(className, id) { // sheet GL1A, GL1B, GL2A...
   var idCol = 2; // col B
-  var finalGradeCol = 14;
+  var totalPointsCol = 15;
   
   //========================================================================
   
@@ -727,14 +731,14 @@ function getFinalGrade(className, id) { // sheet GL1A, GL1B, GL2A...
   if(sheet != null) {
     var range = sheet.getRange(2, 1, 60, 20); //row, col, numRows, numCols
   
-    var idCell, finalGradeCell;
+    var idCell, totalPointsCell;
   
     // iterate through all cells in the range
     for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
       idCell = range.getCell(cellRow, idCol);
-      finalGradeCell = range.getCell(cellRow, finalGradeCol);
+      totalPointsCell = range.getCell(cellRow, totalPointsCol);
       if(idCell.getValue() == id) {
-        return finalGradeCell.getValue();
+        return totalPointsCell.getValue();
       }
     }
   }
@@ -1041,4 +1045,91 @@ function updateClassesForNewRegImpl() {
   }
   
 };
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// DO NOT DELETE THIS FUNCTION
+// Update classes
+// This function can be used for updating individual cell in each class sheet
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+function updateCells() {
+  var ui = SpreadsheetApp.getUi(); // Same variations.
+  
+  var response = ui.alert(
+      'Warning!!!',
+      'Do you want to update cells?',
+      ui.ButtonSet.YES_NO);
+
+  // Process the user's response.
+  if (response == ui.Button.YES) {
+    updateCellsImpl();
+  }
+}
+
+
+function updateCellsImpl() {
+  //var glClassTemplateId = getStr("GL_CLASS_TEMPLATE_ID");
+  //var vnClassTemplateId = getStr("VN_CLASS_TEMPLATE_ID");
+
+  updateCellsImpl2("gl-classes");
+  updateCellsImpl2("vn-classes");
+}
+
+
+function updateCellsImpl2(sheetName, templateId) {
+  
+  var clsNameCol          = 2;
+  var gmailCol            = 6;
+  var actionCol           = 7;
+  var clsFolderIdCol      = 1;
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  var range = sheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
+
+  var clsName, action, clsFolder;
+  
+  // iterate through all cells in the range
+  for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
+    clsName = range.getCell(cellRow, clsNameCol).getValue();
+    if( clsName == "")
+      break;
+
+    //gmail = range.getCell(cellRow, gmailCol).getValue().trim();
+    action = range.getCell(cellRow, actionCol).getValue();
+    clsFolder = DriveApp.getFolderById(range.getCell(cellRow, clsFolderIdCol).getValue());
+    
+    if(action == 'x') {
+      Logger.log(clsName);
+      
+      updateStudentsMasterSheet(ss.getSheetByName(clsName));
+      // Open template spreadsheet
+      //var tss = SpreadsheetApp.openById(templateId);
+      
+      // Open class spreadsheet
+      //var css = SpreadsheetApp.openById(getClassSpreadsheetId(clsName, clsFolder));
+
+      // Update `grades` sheet
+      //updateSheet_Grades(tss, css, cellRow);
+
+      // Update `attendance_HK1` sheet
+      // updateSheet_Attendance(tss, css);
+    }
+  }
+}
+
+
+function updateStudentsMasterSheet(sheet) {
+  //var newValue = '=query(students!1:700, "select A,B,C,D,E,R,O,P,Q,G,H,K,AD where " & if(left(A1,1)="G","G","I") & "=" & mid(A1,3,1) & " and " & if(left(A1,1)="G","H","J") & "=\'" & right(A1,1) & "\' order by C,E")'
+  //sheet.getRange("B1:B1").getCell(1, 1).setValue(newValue);
+  
+  //var newValue = 'TotalPoints'
+  //sheet.getRange("O1:O1").getCell(1, 1).setValue(newValue);
+  
+  var newValue = '=CONCATENATE(COUNTIFS(O2:O52, "0")," | ", MIN(O2:O52)," - ", MAX(O2:O52), " | ", COUNTIFS(O2:O52, ">89.99"), ":", COUNTIFS(O2:O52, ">79.99")-COUNTIFS(O2:O52, ">89.99"), ":", COUNTIFS(O2:O52, ">69.99")-COUNTIFS(O2:O52, ">79.99"), ":", COUNTIFS(O2:O52, "<=69.99"))'
+  sheet.getRange("P1:P1").getCell(1, 1).setValue(newValue);
+}
+
 
