@@ -14,18 +14,22 @@ function onOpen() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet();
   var entries = [
     // DO NOT DELETE THESE TWO FUNCTIONS
+    //{ 
+    //  name : "Create classes (root only)",
+    //  functionName : "createClasses"
+    //},    
+    //{ 
+    //  name : "Update class sheets in this spreadsheet (root only)",
+    //  functionName : "updateSheetsInThisSpreadSheet"
+    //},    
     { 
-      name : "Update cells (root only)",
-      functionName : "updateCells"
+      name : "Update class spreadSheets (root only)",
+      functionName : "updateClassSpreadSheets"
     },    
-    { 
-      name : "Create classes (root only)",
-      functionName : "createClasses"
-    },    
-    { 
-      name : "Update classes (root only)",
-      functionName : "updateClasses"
-    },    
+    //{ 
+    //  name : "Update class spreadSheet using template spreadSheet(root only)",
+    //  functionName : "updateClassSpreadSheetUsingTemplateSpreadSheet"
+    //},    
     //{
     //name : "00 - Fill in service dates (August/early September)",
     //functionName : "fillServiceDates"
@@ -240,6 +244,201 @@ function getReportFolderId(clsName, clsFolder) {
 
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// DO NOT DELETE THIS FUNCTION
+// Update classes
+// This function can be used for updating individual cell in each class sheet
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+function updateSheetsInThisSpreadSheet() {
+  var ui = SpreadsheetApp.getUi(); // Same variations.
+  
+  var response = ui.alert(
+      'Warning!!!',
+      'Do you want to updateSheetsInThisSpreadSheet?',
+      ui.ButtonSet.YES_NO);
+
+  // Process the user's response.
+  if (response == ui.Button.YES) {
+    updateSheetsInThisSpreadSheetImpl();
+  }
+}
+
+
+function updateSheetsInThisSpreadSheetImpl() {
+  updateSheetsInThisSpreadSheetImpl2("gl-classes");
+  updateSheetsInThisSpreadSheetImpl2("vn-classes");
+}
+
+
+function updateSheetsInThisSpreadSheetImpl2(sheetName) {
+  
+  var clsNameCol          = 2;
+  var gmailCol            = 6;
+  var actionCol           = 7;
+  var clsFolderIdCol      = 1;
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  var range = sheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
+
+  var clsName, action, clsFolder;
+  
+  // iterate through all cells in the range
+  for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
+    clsName = range.getCell(cellRow, clsNameCol).getValue();
+    if( clsName == "")
+      break;
+
+    //gmail = range.getCell(cellRow, gmailCol).getValue().trim();
+    action = range.getCell(cellRow, actionCol).getValue();
+    clsFolder = DriveApp.getFolderById(range.getCell(cellRow, clsFolderIdCol).getValue());
+    
+    if(action == 'x') {
+      Logger.log(clsName);
+      
+      updateSheetsInThisSpreadSheet_ClassSheet(ss.getSheetByName(clsName), clsName);
+    }
+  }
+}
+
+
+function updateSheetsInThisSpreadSheet_ClassSheet(sheet, clsName) {
+
+  var newValue
+  if(clsName.substr(0,2) == "GL") { // GL class sheet
+    newValue = '=query(students!1:700, "select A,B,C,D,E,R,O,P,Q,I,J,K,AD where " & if(left(A1,1)="G","G","I") & "=" & mid(A1,3,1) & " and " & if(left(A1,1)="G","H","J") & "=\'" & right(A1,1) & "\' order by C,E")'
+  }
+  else { // VN class sheet
+    newValue = '=query(students!1:700, "select A,B,C,D,E,R,O,P,Q,G,H,K,AD where " & if(left(A1,1)="G","G","I") & "=" & mid(A1,3,1) & " and " & if(left(A1,1)="G","H","J") & "=\'" & right(A1,1) & "\' order by C,E")'
+  }
+  sheet.getRange("B1:B1").getCell(1, 1).setValue(newValue);
+  
+
+  newValue = 'TotalPoints'
+  sheet.getRange("O1:O1").getCell(1, 1).setValue(newValue);
+  
+  newValue = '=CONCATENATE(COUNTIFS(O2:O52, "0")," | ", MIN(O2:O52)," - ", MAX(O2:O52), " | ", COUNTIFS(O2:O52, ">89.99"), ":", COUNTIFS(O2:O52, ">79.99")-COUNTIFS(O2:O52, ">89.99"), ":", COUNTIFS(O2:O52, ">69.99")-COUNTIFS(O2:O52, ">79.99"), ":", COUNTIFS(O2:O52, "<=69.99"))'
+  sheet.getRange("P1:P1").getCell(1, 1).setValue(newValue);
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// DO NOT DELETE THIS FUNCTION
+// Update classes
+// This function can be used for updating individual cell in each class sheet
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+function updateClassSpreadSheets() {
+  var ui = SpreadsheetApp.getUi(); // Same variations.
+  
+  var response = ui.alert(
+      'Warning!!!',
+      'Do you want to updateClassSpreadSheets?',
+      ui.ButtonSet.YES_NO);
+
+  // Process the user's response.
+  if (response == ui.Button.YES) {
+    updateClassSpreadSheetsImpl();
+  }
+}
+
+
+function updateClassSpreadSheetsImpl() {
+  updateClassSpreadSheetsImpl2("gl-classes");
+  updateClassSpreadSheetsImpl2("vn-classes");
+}
+
+
+function updateClassSpreadSheetsImpl2(sheetName) {
+  
+  var clsNameCol          = 2;
+  var gmailCol            = 6;
+  var actionCol           = 7;
+  var clsFolderIdCol      = 1;
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  var range = sheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
+
+  var clsName, action, clsFolder;
+  
+  // iterate through all cells in the range
+  for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
+    clsName = range.getCell(cellRow, clsNameCol).getValue();
+    if( clsName == "")
+      break;
+
+    //gmail = range.getCell(cellRow, gmailCol).getValue().trim();
+    action = range.getCell(cellRow, actionCol).getValue();
+    clsFolder = DriveApp.getFolderById(range.getCell(cellRow, clsFolderIdCol).getValue());
+    
+    if(action == 'x') {
+      Logger.log(clsName);
+      
+      // Open target class spreadsheet
+      var tss = SpreadsheetApp.openById(getClassSpreadsheetId(clsName, clsFolder));
+
+      // Update `contacts` sheet in each class spreadsheet
+      updateClassSpreadSheets_contactsSheet(tss, clsName, ss.getId());
+
+      // Update `attendance_HK1` sheet in each class spreadsheet
+      updateClassSpreadSheets_attendanceSheet(tss, "HK1");
+
+      // Update `attendance_HK2` sheet in each class spreadsheet
+      updateClassSpreadSheets_attendanceSheet(tss, "HK2");
+
+      // Update `grades` sheet in each class spreadsheet
+      updateClassSpreadSheets_gradesSheet(tss, clsName);
+
+    }
+  }
+}
+
+function updateClassSpreadSheets_contactsSheet(tss, clsName, studentMasterSpreadsheetId) {
+
+  var sn = 'contacts';
+      
+  // sheet
+  var sheet = tss.getSheetByName(sn);
+  
+  // insert 1 column after column 3 in this sheet
+  sheet.insertColumns(3, 1); 
+  
+  var newValue = '=IMPORTRANGE("' + studentMasterSpreadsheetId + '",A1&"!B1:J52")'
+  sheet.getRange("A2:A2").getCell(1, 1).setValue(newValue);
+}
+
+function updateClassSpreadSheets_attendanceSheet(tss, hocKy) {
+
+  var sn = 'attendance-' + hocKy;
+      
+  // sheet
+  var sheet = tss.getSheetByName(sn);
+  
+  var newValue = '=query(contacts!2:52, "select C,E,G,H")'
+  sheet.getRange("B2:B2").getCell(1, 1).setValue(newValue);
+}
+
+function updateClassSpreadSheets_gradesSheet(tss) {
+
+  var sn = 'grades';
+      
+  // sheet
+  var sheet = tss.getSheetByName(sn);
+  
+  var newValue = '=query(contacts!2:60, "select A,B,C,E,I")'
+  sheet.getRange("A2:A2").getCell(1, 1).setValue(newValue);
+}
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // DO NOT DELETE THIS FUNCTION
@@ -247,31 +446,31 @@ function getReportFolderId(clsName, clsFolder) {
 // This function can be used for updating classes if teachers have not updated their classes
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-function updateClasses() {
+function updateClassSpreadSheetUsingTemplateSpreadSheet() {
   var ui = SpreadsheetApp.getUi(); // Same variations.
   
   var response = ui.alert(
       'Warning!!!',
-      'Do you want to update classes?',
+      'Do you want to updateClassSpreadSheetUsingTemplateSpreadSheet?',
       ui.ButtonSet.YES_NO);
 
   // Process the user's response.
   if (response == ui.Button.YES) {
-    updateClassesImpl();
+    updateClassSpreadSheetUsingTemplateSpreadSheetImpl();
   }
 }
 
 
-function updateClassesImpl() {
+function updateClassSpreadSheetUsingTemplateSpreadSheetImpl() {
   var glClassTemplateId = getStr("GL_CLASS_TEMPLATE_ID");
   var vnClassTemplateId = getStr("VN_CLASS_TEMPLATE_ID");
 
-  updateClassesImpl2("gl-classes", glClassTemplateId, 1);
-  updateClassesImpl2("vn-classes", vnClassTemplateId, 3);
+  updateClassSpreadSheetUsingTemplateSpreadSheetImpl2("gl-classes", glClassTemplateId, 1);
+  updateClassSpreadSheetUsingTemplateSpreadSheetImpl2("vn-classes", vnClassTemplateId, 3);
 }
 
 
-function updateClassesImpl2(sheetName, templateId, tokenNumber) {
+function updateClassSpreadSheetUsingTemplateSpreadSheetImpl2(sheetName, templateId, tokenNumber) {
   
   var clsNameCol          = 2;
   var gmailCol            = 6;
@@ -304,16 +503,16 @@ function updateClassesImpl2(sheetName, templateId, tokenNumber) {
       var css = SpreadsheetApp.openById(getClassSpreadsheetId(clsName, clsFolder));
 
       // Update `grades` sheet
-      //updateSheet_Grades(tss, css, cellRow, tokenNumber);
+      updateClassSpreadSheetUsingTemplateSpreadSheet_gradesSheet(tss, css, cellRow, tokenNumber);
 
       // Update `attendance_HK1` sheet
-      // updateSheet_Attendance(tss, css);
+      updateClassSpreadSheetUsingTemplateSpreadSheet_attendanceSheet(tss, css);
     }
   }
 }
 
 
-function updateSheet_Grades(tss, css, cellRow, tokenNumber) {
+function updateClassSpreadSheetUsingTemplateSpreadSheet_gradesSheet(tss, css, cellRow, tokenNumber) {
 
   var sn = 'grades';
       
@@ -345,7 +544,7 @@ function updateSheet_Grades(tss, css, cellRow, tokenNumber) {
 }
 
 
-function updateSheet_Attendance(tss, css) {
+function updateClassSpreadSheetUsingTemplateSpreadSheet_attendanceSheet(tss, css) {
 
   var sn = 'attendance-HK1';
       
@@ -371,6 +570,8 @@ function updateSheet_Attendance(tss, css) {
   ts.getRange(A1Range).setValues(SData);
      
 }
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1045,91 +1246,5 @@ function updateClassesForNewRegImpl() {
   }
   
 };
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// DO NOT DELETE THIS FUNCTION
-// Update classes
-// This function can be used for updating individual cell in each class sheet
-//
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-function updateCells() {
-  var ui = SpreadsheetApp.getUi(); // Same variations.
-  
-  var response = ui.alert(
-      'Warning!!!',
-      'Do you want to update cells?',
-      ui.ButtonSet.YES_NO);
-
-  // Process the user's response.
-  if (response == ui.Button.YES) {
-    updateCellsImpl();
-  }
-}
-
-
-function updateCellsImpl() {
-  //var glClassTemplateId = getStr("GL_CLASS_TEMPLATE_ID");
-  //var vnClassTemplateId = getStr("VN_CLASS_TEMPLATE_ID");
-
-  updateCellsImpl2("gl-classes");
-  updateCellsImpl2("vn-classes");
-}
-
-
-function updateCellsImpl2(sheetName, templateId) {
-  
-  var clsNameCol          = 2;
-  var gmailCol            = 6;
-  var actionCol           = 7;
-  var clsFolderIdCol      = 1;
-  
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(sheetName);
-  var range = sheet.getRange(2, 1, 20, 15); //row, col, numRows, numCols
-
-  var clsName, action, clsFolder;
-  
-  // iterate through all cells in the range
-  for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
-    clsName = range.getCell(cellRow, clsNameCol).getValue();
-    if( clsName == "")
-      break;
-
-    //gmail = range.getCell(cellRow, gmailCol).getValue().trim();
-    action = range.getCell(cellRow, actionCol).getValue();
-    clsFolder = DriveApp.getFolderById(range.getCell(cellRow, clsFolderIdCol).getValue());
-    
-    if(action == 'x') {
-      Logger.log(clsName);
-      
-      updateStudentsMasterSheet(ss.getSheetByName(clsName));
-      // Open template spreadsheet
-      //var tss = SpreadsheetApp.openById(templateId);
-      
-      // Open class spreadsheet
-      //var css = SpreadsheetApp.openById(getClassSpreadsheetId(clsName, clsFolder));
-
-      // Update `grades` sheet
-      //updateSheet_Grades(tss, css, cellRow);
-
-      // Update `attendance_HK1` sheet
-      // updateSheet_Attendance(tss, css);
-    }
-  }
-}
-
-
-function updateStudentsMasterSheet(sheet) {
-  //var newValue = '=query(students!1:700, "select A,B,C,D,E,R,O,P,Q,G,H,K,AD where " & if(left(A1,1)="G","G","I") & "=" & mid(A1,3,1) & " and " & if(left(A1,1)="G","H","J") & "=\'" & right(A1,1) & "\' order by C,E")'
-  //sheet.getRange("B1:B1").getCell(1, 1).setValue(newValue);
-  
-  //var newValue = 'TotalPoints'
-  //sheet.getRange("O1:O1").getCell(1, 1).setValue(newValue);
-  
-  var newValue = '=CONCATENATE(COUNTIFS(O2:O52, "0")," | ", MIN(O2:O52)," - ", MAX(O2:O52), " | ", COUNTIFS(O2:O52, ">89.99"), ":", COUNTIFS(O2:O52, ">79.99")-COUNTIFS(O2:O52, ">89.99"), ":", COUNTIFS(O2:O52, ">69.99")-COUNTIFS(O2:O52, ">79.99"), ":", COUNTIFS(O2:O52, "<=69.99"))'
-  sheet.getRange("P1:P1").getCell(1, 1).setValue(newValue);
-}
 
 
