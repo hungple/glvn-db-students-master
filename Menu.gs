@@ -39,7 +39,7 @@ function onOpen() {
       functionName : "shareClasses"
     },
     {
-      name : "02 - Update student final points (end of May/early June)",
+      name : "02 - Update student glFinalPoint and vnFinalPoint (end of May/early June)",
       functionName : "updateFinalPoints"
     },
     {
@@ -864,7 +864,7 @@ function updateFinalPoints() {
   
   var response = ui.alert(
       'Warning!!!',
-      'Do you want to update pass/fail for students?',
+      'Do you want to update glFinalPoint and vnFinalPoint for students?',
       ui.ButtonSet.YES_NO);
 
   // Process the user's response.
@@ -877,26 +877,26 @@ function updateFinalPoints() {
 function updateFinalPointImpl() {
   
   var idCol       = 1;  
-  var glLevelCol  = 8; 
-  var glNameCol   = 9; 
-  var vnLevelCol  = 10; 
-  var vnNameCol   = 11; 
-  var isRegCol    = 12; 
+  var glLevelCol  = 7; 
+  var glNameCol   = 8; 
+  var vnLevelCol  = 9; 
+  var vnNameCol   = 10; 
+  var isRegCol    = 11; 
   
   var glFinalGradeCol = 32;  
   var vnFinalGradeCol = 33; 
   
-  ////////////////////////////////////////////////////////////////////////////////////
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Std_VGz6v3");
-  var range = sheet.getRange(1, 1, 700, 34); //row, col, numRows, numCols 
-  var rowStartCell = range.getCell(2, 34);
-  var rowStart = rowStartCell.getValue()+1;
+  var range = sheet.getRange(1, 1, 700, 34); //row, col, numRows, numCols
+  var rowStartCell = sheet.getRange("AH1:AH1").getCell(1, 1); // <= Need to update column
+  ////////////////////////////////////////////////////////////////////////////////////
   
   var id, isReg, glLevel, glName, vnLevel, vnName; 
+  
   // iterate through all cells in the range
-  for (var cellRow = rowStart; ; cellRow++) {
+  for (var cellRow = rowStartCell.getValue(); ; cellRow++) {
+    
     id = range.getCell(cellRow, idCol).getValue(); 
-
     if(id == "") break;
     
     isReg   = range.getCell(cellRow, isRegCol).getValue();
@@ -914,6 +914,10 @@ function updateFinalPointImpl() {
         range.getCell(cellRow, vnFinalGradeCol).setValue(getFinalGrade("VN" + vnLevel + vnName, id));
       }
     }
+    else {
+      range.getCell(cellRow, glFinalGradeCol).setValue("");
+      range.getCell(cellRow, vnFinalGradeCol).setValue("");
+    }
    
     // update rowStart cell
     rowStartCell.setValue(cellRow);
@@ -922,7 +926,7 @@ function updateFinalPointImpl() {
 };
 
 
-function getFinalGrade(className, id) { // sheet GL1A, GL1B, GL2A...
+function getFinalGrade(className, sid) { // sheet GL1A, GL1B, GL2A...
   var idCol = 2; // col B
   var totalPointsCol = 15;
   
@@ -938,7 +942,7 @@ function getFinalGrade(className, id) { // sheet GL1A, GL1B, GL2A...
     for (var cellRow = 1; cellRow <= range.getHeight(); cellRow++) {
       idCell = range.getCell(cellRow, idCol);
       totalPointsCell = range.getCell(cellRow, totalPointsCol);
-      if(idCell.getValue() == id) {
+      if(idCell.getValue() == sid) {
         return totalPointsCell.getValue();
       }
     }
@@ -1126,48 +1130,53 @@ function saveFormerStudents() {
 
   // Open the new spreadsheet
   var ss = SpreadsheetApp.openById(newFile.getId());
-  ss.getSheetByName("GL1A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL1B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL2A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL2B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL3A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL3B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL4A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL4B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL5A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL5B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL6A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL6B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL7A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL7B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL8A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("GL8B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN1A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN1B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN2A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN2B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN3A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN3B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN4A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN4B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN5A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN5B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN6A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN6B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN7A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN7B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN8A").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("VN8B").getRange("N2:N2").getCell(1, 1).setValue("");
-  ss.getSheetByName("gl-classes").getRange("G2:H17").clear();
-  ss.getSheetByName("vn-classes").getRange("G2:H17").clear();
+  
+  // Remove links to all class spreadsheets
+  ss.getSheetByName("GL1A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL1B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL2A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL2B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL3A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL3B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL4A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL4B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL5A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL5B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL6A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL6B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL7A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL7B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL8A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("GL8B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN1A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN1B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN2A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN2B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN3A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN3B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN4A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN4B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN5A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN5B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN6A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN6B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN7A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN7B").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN8A").getRange("O2:O2").getCell(1, 1).setValue("");
+  ss.getSheetByName("VN8B").getRange("O2:O2").getCell(1, 1).setValue("");
+  //ss.getSheetByName("gl-classes").getRange("G2:H17").clear();
+  //ss.getSheetByName("vn-classes").getRange("G2:H17").clear();
   
   // Update First Communion sheet
-  var temp = "=query(students!1:700, \"select A,B,C,D,E,F,L,M,N,O,P,Q,R,S,T,U,V,W,X where G=3 and X='St. Maria Goretti, San Jose, CA' order by C,E\")";
-  ss.getSheetByName("FCommunion").getRange("A1:A1").getCell(1, 1).setValue(temp);
+  var temp = "=query(students!1:686, \"select A,B,C,D,E,F,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD where G=3 and AD>=" + getStr("PASSING_POINT") + " order by C,E\")";
+  ss.getSheetByName("Eucharist").getRange("A1:A1").getCell(1, 1).setValue(temp);
 
   // Update Confirmation sheet
-  temp = "=query(students!1:700, \"select A,B,C,D,E,F,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD where G=8 and AA='St. Maria Goretti, San Jose, CA' order by C,E\")";
+  temp = "=query(students!1:686, \"select A,B,C,D,E,F,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD where G=8 and AD>=" + getStr("PASSING_POINT") + " order by C,E\")";
   ss.getSheetByName("Confirmation").getRange("A1:A1").getCell(1, 1).setValue(temp);
+  
+  ss.getSheetByName("gl-honor-roll").clear();
+  ss.getSheetByName("vn-honor-roll").clear();
 };
 
 
@@ -1191,6 +1200,15 @@ function updateClassesForNewReg() {
   }
 }
 
+function waitSeconds(iMilliSeconds) {
+    var counter= 0
+        , start = new Date().getTime()
+        , end = 0;
+    while (counter < iMilliSeconds) {
+        end = new Date().getTime();
+        counter = end - start;
+    }
+}
 
 function updateClassesForNewRegImpl() {
   
@@ -1204,16 +1222,17 @@ function updateClassesForNewRegImpl() {
   var glFinalPointCol   = 32;  
   var vnFinalPointCol   = 33; 
 
-  
-  ////////////////////////////////////////////////////////////////////////////////////
+  var passing_point = parseInt(getStr("PASSING_POINT"));
+ 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Std_VGz6v3");
-  var range = sheet.getRange(1, 1, 700, 34); //row, col, numRows, numCols 
-  var rowStartCell = range.getCell(2, 34);
-  var rowStart = rowStartCell.getValue()+1;
+  var range = sheet.getRange(1, 1, 700, 34); //row, col, numRows, numCols
+  var rowStartCell = sheet.getRange("AH1:AH1").getCell(1, 1); // <= Need to update column
+  ////////////////////////////////////////////////////////////////////////////////////
+ 
   
   var id, isReg, glG, glN, vnG, vnN, glFinalPoint, vnFinalPoint; 
   // iterate through all cells in the range
-  for (var cellRow = rowStart; ; cellRow++) {
+  for (var cellRow = rowStartCell.getValue(); ; cellRow++) {
     id = range.getCell(cellRow, idCol).getValue(); 
 
     if(id == "") break;
@@ -1227,16 +1246,20 @@ function updateClassesForNewRegImpl() {
     vnFinalPoint  = range.getCell(cellRow, vnFinalPointCol).getValue();
     
     if(isReg == "x") {
-      if(glG > 0 && glN != "" && glFinalPoint >= 65) {
+      if(glG > 0 && glN != "" && glFinalPoint >= passing_point) {
         range.getCell(cellRow, glGCol).setValue(glG + 1);
       }
       
-      if(vnG > 0 && vnN != "" && vnFinalPoint >= 65) {
+      if(vnG > 0 && vnN != "" && vnFinalPoint >= passing_point) {
         range.getCell(cellRow, vnGCol).setValue(vnG + 1);
       }
       
-      //Clear the x
+      // Clear the x
       range.getCell(cellRow, isRegCol).setValue('');
+      
+      // Clear glFinalPoint and vnFinalPoint
+      
+      waitSeconds(3000);
     }
    
     // update rowStart cell
